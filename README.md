@@ -162,6 +162,8 @@ Live links: backend — [add URL] · frontend — [add URL]
 - Frontend shows live connectivity status, loading/empty/error states, and
   toasts on every mutation; 401 auto-logout.
 
+- **Queue analytics** — tokens issued, served, no-show rate, average wait and hourly throughput per counter.
+
 ## Roadmap
 
 - SMS/WhatsApp "you're next" notifications.

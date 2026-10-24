@@ -5,6 +5,29 @@ import Navbar from '../components/Navbar.jsx';
 import { Loading, Empty, ErrorState } from '../components/states.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
+function QueueAnalytics({ serviceId }) {
+  const [data, setData] = useState(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    client.get(`/services/${serviceId}/analytics`).then((r) => setData(r.data)).catch(() => {});
+  }, [open, serviceId]);
+  return (
+    <div className="mt-2">
+      <button onClick={() => setOpen(!open)} className="mono text-[11px] font-bold uppercase text-neutral-400 hover:text-safety">
+        {open ? '▾ hide insights' : '▸ insights'}
+      </button>
+      {open && data && (
+        <div className="mono mt-2 grid grid-cols-3 gap-2 rounded-lg bg-board p-3 text-center text-[10px] uppercase text-neutral-400">
+          <div><p className="text-sm text-white">{data.tokensIssued}</p>tokens</div>
+          <div><p className="text-sm text-safety">{data.noShowRate}%</p>no-show</div>
+          <div><p className="text-sm text-white">{data.avgWaitMin ?? '—'}m</p>avg wait</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Services() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +66,7 @@ export default function Services() {
                 <div className="bg-neutral-100 p-2"><p className="text-lg">{s.stats.avg}m</p><p className="text-neutral-400">avg visit</p></div>
                 <div className="bg-safety-soft p-2 text-safety"><p className="text-lg">±{s.stats.std}m</p><p className="text-neutral-400">spread</p></div>
               </div>
+              <QueueAnalytics serviceId={s._id} />
               <Link to={`/queue/${s._id}`} className="mt-4 block border-2 border-black bg-safety py-2.5 text-center font-bold text-white hover:bg-orange-700">
                 {user ? 'Open this queue' : 'Log in to join'}
               </Link>

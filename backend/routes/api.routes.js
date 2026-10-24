@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const a = require('../controllers/auth.controller');
 const q = require('../controllers/queue.controller');
 const s = require('../controllers/staff.controller');
+const extra = require('../controllers/extra.controller');
 const { requireAuth } = require('../middlewares/auth');
 
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 50, standardHeaders: true, legacyHeaders: false });
@@ -13,6 +14,7 @@ router.get('/auth/me', requireAuth, a.me);
 
 // Public live board data
 router.get('/services', q.services);
+router.get('/services/:serviceId/analytics', requireAuth, extra.analytics);
 router.get('/queues/:serviceId/stream', q.stream);
 
 router.use(requireAuth);
