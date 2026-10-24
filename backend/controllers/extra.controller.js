@@ -23,7 +23,7 @@ exports.analytics = asyncHandler(async (req, res) => {
 
   const waited = tokens.filter((t) => t.calledAt);
   const avgWaitMin = waited.length
-    ? Math.round((waited.reduce((s, t) => s + (t.calledAt - new Date(t.createdAt)), 0) / waited.length / 60000) * 10) / 10
+    ? Math.max(0, Math.round((waited.reduce((s, t) => s + (t.calledAt - new Date(t.createdAt)), 0) / waited.length / 60000) * 10) / 10)
     : null;
 
   res.json({
