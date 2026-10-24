@@ -164,6 +164,9 @@ Live links: backend — [add URL] · frontend — [add URL]
 
 - **Queue analytics** — tokens issued, served, no-show rate, average wait and hourly throughput per counter.
 
+- **Garden stats** — watering streak, total litres given, and a rainwater-saved counter from every rain postponement.
+- **Tip of the day** — rotating care tips on the dashboard.
+
 ## Roadmap
 
 - SMS/WhatsApp "you're next" notifications.

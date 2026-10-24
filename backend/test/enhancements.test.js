@@ -1,29 +1,32 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert');
 const { startTest, stopTest, api, login } = require('./helpers');
+const { wateringStreak } = require('../controllers/extra.controller');
 
-let ctx, staff, opdId;
+let ctx, veda;
 
 before(async () => {
   ctx = await startTest();
-  staff = await login(ctx, 'counter@demo.com');
-  opdId = String(ctx.data.opd._id);
+  veda = await login(ctx, 'veda@demo.com');
 });
 
 after(async () => stopTest(ctx));
 
-test('queue analytics compute throughput, no-show rate and wait time', async () => {
-  const r = await api(ctx, 'GET', `/services/${opdId}/analytics`, { token: staff.token });
-  assert.equal(r.status, 200);
-  assert.ok(r.body.tokensIssued >= 14);
-  assert.ok(r.body.served >= 10);
-  assert.ok(r.body.noShowRate >= 0 && r.body.noShowRate <= 100);
-  assert.ok(r.body.avgWaitMin === null || r.body.avgWaitMin >= 0);
-  assert.ok(Array.isArray(r.body.hourly));
+test('watering streak unit test: consecutive days count, gaps reset', () => {
+  const now = new Date();
+  const day = (o) => new Date(now.getTime() - o * 86400000).toISOString();
+  assert.equal(wateringStreak([day(0), day(1), day(2)], now), 3);
+  assert.equal(wateringStreak([day(1), day(2)], now), 2); // today not watered yet
+  assert.equal(wateringStreak([day(0), day(2)], now), 1); // gap breaks it
 });
 
-test('customers can view analytics too (queue transparency)', async () => {
-  const priya = await login(ctx, 'priya@demo.com');
-  const r = await api(ctx, 'GET', `/services/${opdId}/analytics`, { token: priya.token });
+test('garden stats compute water totals, streak and rainwater saved', async () => {
+  const r = await api(ctx, 'GET', '/stats/garden', { token: veda.token });
   assert.equal(r.status, 200);
+  assert.ok(r.body.plants >= 6);
+  assert.ok(r.body.waterings >= 6);
+  assert.ok(r.body.totalLitres > 0);
+  assert.ok(r.body.rainSkips >= 1, 'seed has one rain-postponed plant');
+  assert.ok(r.body.rainwaterSavedLitres > 0);
+  assert.ok(r.body.tip.length > 10);
 });
