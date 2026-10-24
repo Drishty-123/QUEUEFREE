@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-safety: #ea580c;
+  --color-safety-soft: #fff1e7;
+  --color-board: #111111;
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono2: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+body { font-family: var(--font-display); background: #ffffff; color: #111111; }
+.mono { font-family: var(--font-mono2); }
+.display { font-family: "Archivo Black", "Archivo", sans-serif; }
+
+.blink { animation: blink 1.1s ease-in-out 3; }
+@keyframes blink { 50% { opacity: 0.25; } }
