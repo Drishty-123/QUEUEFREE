@@ -8,9 +8,23 @@
   --font-mono2: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-body { font-family: var(--font-display); background: #ffffff; color: #111111; }
+body { font-family: var(--font-display); background: #fafaf9; color: #111111; min-height: 100vh; }
 .mono { font-family: var(--font-mono2); }
 .display { font-family: "Archivo Black", "Archivo", sans-serif; }
 
-.blink { animation: blink 1.1s ease-in-out 3; }
-@keyframes blink { 50% { opacity: 0.25; } }
+@keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes flipTick { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: rotateX(0); opacity: 1; } }
+@keyframes blink2 { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+.reveal > * { opacity: 0; animation: fadeUp .8s cubic-bezier(.2,.7,.3,1) forwards; }
+.reveal > *:nth-child(1) { animation-delay: .05s } .reveal > *:nth-child(2) { animation-delay: .15s }
+.reveal > *:nth-child(3) { animation-delay: .25s } .reveal > *:nth-child(4) { animation-delay: .35s }
+
+.float { animation: floatY 5s ease-in-out infinite; }
+.marquee { display: flex; width: max-content; animation: marquee 26s linear infinite; }
+.hover-lift { transition: transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s; }
+.hover-lift:hover { transform: translate(-2px,-4px); box-shadow: 10px 12px 0 0 #111; }
+.blink-dot { animation: blink2 1.4s ease-in-out infinite; }
+.flap { animation: flipTick .5s ease both; }
