@@ -66,7 +66,7 @@ export default function Services() {
       <main className="mx-auto max-w-5xl px-4 py-12">
         <div className="reveal">
           <p className="mono text-[10px] font-bold uppercase tracking-[0.35em] text-live"><span className="live-dot mr-2 inline-block h-1.5 w-1.5 rounded-full bg-live text-live" />all systems live</p>
-          <h1 className="display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Today\u2019s counters</h1>
+          <h1 className="display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Today’s counters</h1>
           <p className="mt-2 max-w-lg text-dim">Pick a counter, take a token, and wait anywhere but the waiting room. Your position streams live.</p>
         </div>
 

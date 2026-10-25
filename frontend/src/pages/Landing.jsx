@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 const FEATURES = [
   { icon: '📡', title: 'Live over SSE', body: 'Every call, join and no-show streams to your screen instantly. No refresh — ever.', },
-  { icon: '🧮', title: 'Honest ETAs', body: 'Waits predicted from the counter\u2019s real service-speed history, with an uncertainty band that grows with distance.', },
+  { icon: '🧮', title: 'Honest ETAs', body: 'Waits predicted from the counter’s real service-speed history, with an uncertainty band that grows with distance.', },
   { icon: '♿', title: 'Priority lane', body: 'Elderly, pregnant and accessibility tokens are called first — flagged, never hidden.', },
   { icon: '↩️', title: 'No-show grace', body: 'Missed your call? Rejoin from the board without losing your details or dignity.', },
 ];
@@ -89,8 +89,8 @@ export default function Landing() {
             </h1>
             <p className="mt-7 max-w-lg text-lg leading-relaxed text-dim">
               Take a numbered token and walk away. QueueFree predicts your turn from the
-              counter\u2019s <strong className="text-ink">actual pace</strong>, streams the board
-              live to your phone, and calls you when it\u2019s time.
+              counter’s <strong className="text-ink">actual pace</strong>, streams the board
+              live to your phone, and calls you when it’s time.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link to="/services" className="btn-primary rounded-full px-9 py-4 text-base font-bold">See live counters →</Link>

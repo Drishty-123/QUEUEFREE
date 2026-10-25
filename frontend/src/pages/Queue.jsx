@@ -97,7 +97,7 @@ export default function Queue() {
 
           {mine === null && (
             <div className="glass tilt-card rounded-[28px] p-7 text-center">
-              <p className="display text-lg font-semibold">You\u2019re not in this queue</p>
+              <p className="display text-lg font-semibold">You’re not in this queue</p>
               {live?.service?.open === false ? (
                 <p className="mono mt-4 rounded-xl border border-signal/40 bg-signal/10 py-3 text-xs font-bold uppercase tracking-[0.2em] text-[#ff9d66]">counter closed — check back later</p>
               ) : (
@@ -122,7 +122,7 @@ export default function Queue() {
 
               {mine.state === 'waiting' ? (
                 mine.position <= 2 ? (
-                  <p className="mono mt-4 animate-pulse text-lg font-bold uppercase tracking-[0.15em] text-live">⚡ you\u2019re almost up — get ready</p>
+                  <p className="mono mt-4 animate-pulse text-lg font-bold uppercase tracking-[0.15em] text-live">⚡ you’re almost up — get ready</p>
                 ) : (
                   <div className="mt-4 flex flex-wrap items-end gap-x-8 gap-y-3">
                     <div><p className="mono text-[9px] uppercase tracking-[0.25em] text-dim">position</p><p className="mono text-2xl font-bold text-live">#{mine.position}</p></div>
@@ -133,7 +133,7 @@ export default function Queue() {
                   </div>
                 )
               ) : (
-                <p className="display mt-4 text-2xl font-bold text-sign glow-amber">It\u2019s your turn — head to the counter!</p>
+                <p className="display mt-4 text-2xl font-bold text-sign glow-amber">It’s your turn — head to the counter!</p>
               )}
 
               <div className="mt-6 flex gap-3 border-t border-dashed border-edge/70 pt-5">
@@ -162,7 +162,7 @@ export default function Queue() {
                 </span>
                 <span className={`mono text-[10px] font-bold uppercase tracking-[0.2em] ${t.state === 'called' ? 'text-sign' : 'text-dim'}`}>{t.state}</span>
               </div>
-            )) : <p className="px-5 py-8 text-center text-sm text-dim">Queue is empty — you\u2019d be first.</p>}
+            )) : <p className="px-5 py-8 text-center text-sm text-dim">Queue is empty — you’d be first.</p>}
           </div>
         </section>
       </main>
