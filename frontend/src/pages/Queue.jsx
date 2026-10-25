@@ -66,6 +66,13 @@ export default function Queue() {
       <main className="mx-auto max-w-3xl px-4 py-10">
         <Link to="/services" className="mono text-[10px] font-bold uppercase tracking-[0.3em] text-dim transition hover:text-sign">← all counters</Link>
 
+        {user?.role === 'staff' && (
+          <div className="glass-soft mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-sign/30 px-5 py-3.5">
+            <p className="text-sm text-dim">You are signed in as <strong className="text-sign">counter staff</strong> — manage this queue from the console.</p>
+            <Link to={`/counter/${serviceId}`} className="btn-primary rounded-full px-5 py-2 text-xs font-bold">🎮 Open console →</Link>
+          </div>
+        )}
+
         <div className="mt-4 flex items-center justify-between gap-3">
           <h1 className="display text-3xl font-bold tracking-tight sm:text-4xl">{live?.service?.name || 'Loading…'}</h1>
           <span className={`chip flex items-center gap-2 border px-3 py-1.5 font-bold ${connected ? 'border-live/40 text-live' : 'border-dim/30 text-dim'}`}>

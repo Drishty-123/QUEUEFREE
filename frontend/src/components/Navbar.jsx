@@ -19,6 +19,9 @@ export default function Navbar() {
           <NavLink to="/services" className={({ isActive }) => `rounded-full px-4 py-2 transition ${isActive ? 'bg-sign/15 text-sign' : 'text-dim hover:text-ink hover:bg-white/5'}`}>
             Counters
           </NavLink>
+          <NavLink to="/guide" className={({ isActive }) => `rounded-full px-4 py-2 transition ${isActive ? 'bg-sign/15 text-sign' : 'text-dim hover:text-ink hover:bg-white/5'}`}>
+            📖 Guide
+          </NavLink>
           {user ? (
             <>
               {user?.role === 'staff' && <span className="chip hidden bg-live/15 px-2.5 py-1 font-bold text-live sm:block">STAFF</span>}
