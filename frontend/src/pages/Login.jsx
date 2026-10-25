@@ -33,7 +33,7 @@ export default function Login() {
       <div className="pointer-events-none absolute -top-24 right-[-6rem] h-96 w-96 rounded-full bg-sign/15 blur-[110px]" />
       <div className="pointer-events-none absolute bottom-[-8rem] left-[-6rem] h-80 w-80 rounded-full bg-live/10 blur-[110px]" />
 
-      <div className="glass tilt-card relative w-full max-w-md rounded-[28px] p-8 sm:p-10">
+      <div className="glass relative w-full max-w-md rounded-[28px] p-8 sm:p-10">
         <div className="text-center">
           <span className="medallion mx-auto grid h-14 w-14 place-items-center"><span className="mono text-2xl font-bold text-sign">Q</span></span>
           <h1 className="display mt-5 text-3xl font-bold tracking-tight">Welcome back</h1>
