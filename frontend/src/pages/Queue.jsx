@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import client from '../api/client.js';
 import Navbar from '../components/Navbar.jsx';
-import { Loading, ErrorState } from '../components/states.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -11,9 +10,8 @@ export default function Queue() {
   const { user } = useAuth();
   const toast = useToast();
   const [live, setLive] = useState(null);
-  const [mine, setMine] = useState(undefined); // undefined = not loaded yet
+  const [mine, setMine] = useState(undefined);
   const [connected, setConnected] = useState(false);
-  const [error, setError] = useState('');
   const esRef = useRef(null);
 
   async function loadMine() {
@@ -30,7 +28,7 @@ export default function Queue() {
     es.onerror = () => setConnected(false);
     es.addEventListener('state', (e) => {
       try { setLive(JSON.parse(e.data)); } catch { /* ignore */ }
-      loadMine(); // keep position/ETA fresh on every queue mutation
+      loadMine();
     });
     return () => es.close();
   }, [serviceId]);
@@ -39,11 +37,9 @@ export default function Queue() {
     if (!user) { toast('Log in to take a token', 'info'); return; }
     try {
       const r = await client.post(`/queues/${serviceId}/join`, { priority });
-      toast(`Token ${r.data.display} issued — you're #${r.data.position} in line`);
+      toast(`Token ${r.data.display} issued — #${r.data.position} in line`);
       loadMine();
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    } catch (err) { toast(err.message, 'error'); }
   }
 
   async function leave() {
@@ -51,9 +47,7 @@ export default function Queue() {
       await client.delete(`/queues/${serviceId}/me`);
       toast('You left the queue');
       loadMine();
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    } catch (err) { toast(err.message, 'error'); }
   }
 
   async function rejoin() {
@@ -61,100 +55,115 @@ export default function Queue() {
       const r = await client.post(`/queues/${serviceId}/rejoin`, {});
       toast(`Back in line as ${r.data.display}`);
       loadMine();
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    } catch (err) { toast(err.message, 'error'); }
   }
 
-  if (error) return <div className="min-h-screen"><Navbar /><main className="mx-auto max-w-4xl px-4 py-10"><ErrorState message={error} onRetry={() => window.location.reload()} /></main></div>;
+  const digits = String(live?.nowServing?.display ?? '——').split('');
 
   return (
-    <div className="min-h-screen">
+    <div className="scene-grid min-h-screen">
       <Navbar />
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <Link to="/services" className="text-sm font-bold text-neutral-400 hover:text-safety">← All queues</Link>
-        <div className="mt-3 flex items-center justify-between">
-          <h1 className="display text-4xl uppercase">{live?.service?.name || 'Queue'}</h1>
-          <span className={`mono rounded-full px-3 py-1 text-xs font-bold uppercase ${connected ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-400'}`}>
-            {connected ? '● live' : '○ connecting'}
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <Link to="/services" className="mono text-[10px] font-bold uppercase tracking-[0.3em] text-dim transition hover:text-sign">← all counters</Link>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <h1 className="display text-3xl font-bold tracking-tight sm:text-4xl">{live?.service?.name || 'Loading…'}</h1>
+          <span className={`chip flex items-center gap-2 border px-3 py-1.5 font-bold ${connected ? 'border-live/40 text-live' : 'border-dim/30 text-dim'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'live-dot bg-live text-live' : 'bg-dim'}`} />
+            {connected ? 'LIVE' : 'RECONNECTING'}
           </span>
         </div>
 
-        {/* Now serving board */}
-        <section className="mt-6 bg-board p-8 text-center text-white shadow-lg">
-          <p className="mono text-xs uppercase tracking-[0.3em] text-neutral-500">now serving</p>
-          <p className={`display mt-2 text-7xl ${live ? 'blink' : ''}`} key={live?.nowServing?.display}>
-            {live?.nowServing?.display || '——'}
+        {/* ── NOW SERVING board ── */}
+        <section className="glass mt-6 rounded-[28px] p-7 text-center sm:p-9">
+          <p className="mono text-[10px] uppercase tracking-[0.4em] text-dim">now serving</p>
+          <div className="mt-4 flex items-center justify-center gap-2" aria-live="polite">
+            {digits.map((ch, i) => (
+              <span key={`${ch}-${i}-${live?.nowServing?.display ?? ''}`}
+                className={`digit grid place-items-center text-4xl font-bold sm:text-5xl ${ch === '-' || ch === '—' ? 'w-7 text-dim' : 'w-12 sm:w-14'} h-[72px] ${ch === '-' || ch === '—' ? '' : 'text-sign glow-amber'}`}
+                style={{ animationDelay: `${i * 0.08}s` }}>
+                {ch}
+              </span>
+            ))}
+          </div>
+          <p className="mono mt-5 text-xs uppercase tracking-[0.25em] text-dim">
+            {live?.waiting ?? '…'} waiting · avg visit {live?.stats?.avg ?? '–'} min
           </p>
-          <p className="mono mt-2 text-sm text-neutral-400">{live?.waiting ?? '…'} waiting · avg visit {live?.stats?.avg ?? '–'} min</p>
         </section>
 
-        {/* My token */}
-        <section className="mt-6">
-          {mine === undefined && <Loading label="Checking your token…" />}
+        {/* ── my pass ── */}
+        <section className="mt-8">
+          {mine === undefined && <div className="shimmer h-64" />}
+
           {mine === null && (
-            <div className="border-2 border-black p-6 text-center shadow-[6px_6px_0_0_#ea580c]">
-              <p className="font-bold">You're not in this queue.</p>
+            <div className="glass tilt-card rounded-[28px] p-7 text-center">
+              <p className="display text-lg font-semibold">You\u2019re not in this queue</p>
               {live?.service?.open === false ? (
-                <p className="mt-3 rounded-lg bg-red-50 py-2 text-sm font-bold text-red-600">Counter closed — check back later.</p>
+                <p className="mono mt-4 rounded-xl border border-signal/40 bg-signal/10 py-3 text-xs font-bold uppercase tracking-[0.2em] text-[#ff9d66]">counter closed — check back later</p>
               ) : (
                 <>
-                  <button onClick={() => join(false)} className="mt-3 w-full border-2 border-black bg-safety py-3 font-bold text-white hover:bg-orange-700">Take a token</button>
-                  <button onClick={() => join(true)} className="mt-2 w-full border-2 border-dashed border-safety/60 bg-safety-soft py-2.5 text-sm font-bold text-safety hover:bg-safety hover:text-white">
-                    ♿ Priority assistance (elderly / pregnant / accessibility)
+                  <button onClick={() => join(false)} className="btn-primary mt-5 w-full rounded-full py-4 text-base font-bold">Take a token</button>
+                  <button onClick={() => join(true)} className="btn-ghost mt-3 w-full rounded-full border-dashed py-3.5 text-sm font-semibold text-live transition hover:border-live/60 hover:bg-live/5">
+                    ♿ Priority assistance — elderly · pregnant · accessibility
                   </button>
                 </>
               )}
             </div>
           )}
+
           {mine && (
-            <div className={`border-2 border-black p-6 text-center shadow-[6px_6px_0_0_#111] ${mine.state === 'called' ? 'bg-safety-soft' : ''}`}>
-              <p className="mono text-xs uppercase tracking-widest text-neutral-400">your token</p>
-              <p className="display text-6xl">{mine.display}</p>
+            <div className="pass float-3d mx-auto max-w-lg p-6 sm:p-7">
+              {mine.priority && <span className="ribbon mono absolute -top-3 right-6 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em]">Priority</span>}
+              <div className="flex items-center justify-between">
+                <span className="chip bg-sign/15 px-2.5 py-1 font-bold text-sign">YOUR QUEUE PASS</span>
+                <span className="mono text-[10px] tracking-[0.3em] text-dim">{mine.state === 'called' ? 'AT COUNTER' : 'WAITING'}</span>
+              </div>
+              <p className="mono mt-4 text-6xl font-bold tracking-tight text-ink glow-amber sm:text-7xl">{mine.display}</p>
+
               {mine.state === 'waiting' ? (
                 mine.position <= 2 ? (
-                  <p className="mono mt-2 animate-pulse text-xl font-bold uppercase text-safety">⚡ You're almost up — get ready!</p>
+                  <p className="mono mt-4 animate-pulse text-lg font-bold uppercase tracking-[0.15em] text-live">⚡ you\u2019re almost up — get ready</p>
                 ) : (
-                  <>
-                    <p className="mt-2 text-lg font-bold">Position #{mine.position}</p>
-                    <p className="text-sm text-neutral-500">
-                      estimated wait <strong>{mine.stats.minutes} min</strong> (range {mine.stats.low}–{mine.stats.high})
-                    </p>
+                  <div className="mt-4 flex flex-wrap items-end gap-x-8 gap-y-3">
+                    <div><p className="mono text-[9px] uppercase tracking-[0.25em] text-dim">position</p><p className="mono text-2xl font-bold text-live">#{mine.position}</p></div>
+                    <div><p className="mono text-[9px] uppercase tracking-[0.25em] text-dim">est. wait</p><p className="mono text-2xl font-bold text-ink">{mine.stats.minutes}m <span className="text-xs text-dim">({mine.stats.low}–{mine.stats.high})</span></p></div>
                     {mine.estimatedTurnAt && (
-                      <p className="mono mt-1 text-xs text-neutral-400">your turn ≈ {new Date(mine.estimatedTurnAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                      <div><p className="mono text-[9px] uppercase tracking-[0.25em] text-dim">turn at</p><p className="mono text-2xl font-bold text-sign">{new Date(mine.estimatedTurnAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p></div>
                     )}
-                  </>
+                  </div>
                 )
               ) : (
-                <p className="mt-2 text-lg font-bold text-safety">It's your turn — head to the counter!</p>
+                <p className="display mt-4 text-2xl font-bold text-sign glow-amber">It\u2019s your turn — head to the counter!</p>
               )}
-              {mine.priority && <span className="mono mt-1 inline-block rounded bg-safety px-2 py-0.5 text-[10px] font-bold uppercase text-white">priority assistance</span>}
-              <div className="mt-4 flex gap-2">
-                {mine.state === 'waiting' && (
-                  <button onClick={leave} className="flex-1 border-2 border-black py-2.5 text-sm font-bold hover:bg-black hover:text-white">Leave queue</button>
-                )}
-                {mine.state === 'called' && <p className="flex-1 py-2 text-sm font-bold">Show this number at the counter.</p>}
+
+              <div className="mt-6 flex gap-3 border-t border-dashed border-edge/70 pt-5">
+                {mine.state === 'waiting' && <button onClick={leave} className="btn-danger-ghost flex-1 rounded-full py-3 text-sm font-bold">Leave queue</button>}
+                {mine.state === 'waiting' && mine.position <= 2 && <span className="mono flex-1 py-3 text-center text-xs uppercase tracking-[0.2em] text-dim">stay nearby</span>}
               </div>
             </div>
           )}
+
           {mine?.state === 'no-show' && (
-            <button onClick={rejoin} className="mt-3 w-full border-2 border-black bg-safety-soft py-2.5 text-sm font-bold hover:bg-safety hover:text-white">
-              Missed your call? Rejoin at the back
+            <button onClick={rejoin} className="btn-ghost mt-3 w-full rounded-full py-3.5 text-sm font-semibold text-live">
+              Missed your call? Rejoin at the back ↩
             </button>
           )}
         </section>
 
-        {/* Live board rows */}
-        <section className="mt-8 overflow-hidden border-2 border-black">
-          <div className="flex bg-board px-4 py-2 text-xs font-bold uppercase tracking-widest text-white">
-            <span className="flex-1">token</span><span className="flex-1">status</span>
+        {/* ── upcoming rail ── */}
+        <section className="glass-soft mt-8 overflow-hidden rounded-[24px]">
+          <p className="mono border-b border-edge/60 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.3em] text-dim">upcoming tokens</p>
+          <div className="divide-y divide-dashed divide-edge/50">
+            {live?.board?.length ? live.board.map((t, i) => (
+              <div key={t._id} className={`flex items-center justify-between px-5 py-3 text-sm transition ${t.state === 'called' ? 'bg-sign/10' : ''}`}>
+                <span className="mono font-bold text-ink">
+                  {t.priority && <span className="mr-2 rounded bg-live/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-live">priority</span>}
+                  {t.display}
+                </span>
+                <span className={`mono text-[10px] font-bold uppercase tracking-[0.2em] ${t.state === 'called' ? 'text-sign' : 'text-dim'}`}>{t.state}</span>
+              </div>
+            )) : <p className="px-5 py-8 text-center text-sm text-dim">Queue is empty — you\u2019d be first.</p>}
           </div>
-          {live?.board?.length ? live.board.map((t, i) => (
-            <div key={t._id} className={`flex items-center px-4 py-2.5 text-sm ${t.state === 'called' ? 'bg-safety-soft font-bold' : i % 2 ? 'bg-neutral-50' : ''}`}>
-              <span className="mono flex-1 font-bold">{t.display}</span>
-              <span className={`flex-1 uppercase ${t.state === 'called' ? 'text-safety' : 'text-neutral-500'}`}>{t.state}</span>
-            </div>
-          )) : <p className="px-4 py-6 text-center text-sm text-neutral-400">Queue is empty.</p>}
         </section>
       </main>
     </div>
