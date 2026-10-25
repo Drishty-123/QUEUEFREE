@@ -31,7 +31,7 @@ export default function Landing() {
 
         {/* split-flap board */}
         <section className="reveal mx-auto mb-10 max-w-2xl">
-          <div className="border-4 border-black bg-board p-6 shadow-[10px_10px_0_0_#ea580c] sm:p-8">
+          <div className="float-3d border-4 border-black bg-board p-6 shadow-[10px_10px_0_0_#ea580c] sm:p-8">
             <p className="mono text-center text-xs uppercase tracking-[0.4em] text-neutral-500">now serving</p>
             <div className="mt-4 flex items-center justify-center gap-2">
               {['A', '—', '1', '4'].map((ch, i) => (
