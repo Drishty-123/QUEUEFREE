@@ -8,6 +8,7 @@ const tokenSchema = new mongoose.Schema(
     display: { type: String, required: true }, // "A-14"
     state: { type: String, enum: ['waiting', 'called', 'serving', 'done', 'no-show', 'cancelled'], default: 'waiting', index: true },
     noShowCount: { type: Number, default: 0 },
+    priority: { type: Boolean, default: false, index: true },
     calledAt: { type: Date },
     servedStartAt: { type: Date },
     doneAt: { type: Date },

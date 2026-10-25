@@ -30,7 +30,13 @@ export default function Counter() {
       <main className="mx-auto max-w-4xl px-4 py-10">
         <Link to="/services" className="text-sm font-bold text-neutral-400 hover:text-safety">← All queues</Link>
         <div className="mt-3 bg-board p-6 text-white">
-          <p className="mono text-xs uppercase tracking-[0.3em] text-neutral-500">{state.service.name} counter</p>
+          <div className="flex items-center justify-between">
+            <p className="mono text-xs uppercase tracking-[0.3em] text-neutral-500">{state.service.name} counter</p>
+            <button onClick={async () => { try { const r = await client.patch(`/staff/services/${serviceId}/open`, { open: !state.service.open }); toast(r.data.open ? 'Counter opened' : 'Counter closed — new joins blocked'); load(); } catch (err) { toast(err.message, 'error'); } }}
+              className={`mono rounded px-3 py-1 text-[10px] font-bold uppercase ${state.service.open ? 'bg-green-600' : 'bg-red-600'}`}>
+              {state.service.open ? '● open — click to close' : '○ closed — click to open'}
+            </button>
+          </div>
           <div className="mt-2 flex items-end justify-between">
             <p className="display text-6xl">{state.current?.display || '——'}</p>
             <p className="mono text-sm text-neutral-400">{state.waiting.length} waiting</p>
@@ -56,8 +62,8 @@ export default function Counter() {
           <div className="border-2 border-black">
             <p className="mono border-b-2 border-black bg-board px-4 py-2 text-xs font-bold uppercase tracking-widest text-white">waiting ({state.waiting.length})</p>
             {state.waiting.map((t) => (
-              <div key={t._id} className="flex items-center justify-between border-b border-neutral-200 px-4 py-2.5 text-sm last:border-0">
-                <span className="mono font-bold">{t.display}</span>
+              <div key={t._id} className={`flex items-center justify-between border-b border-neutral-200 px-4 py-2.5 text-sm last:border-0 ${t.priority ? 'bg-safety-soft' : ''}`}>
+                <span className="mono font-bold">{t.priority && <span className="mr-1.5 rounded bg-safety px-1.5 py-0.5 text-[9px] uppercase text-white">priority</span>}{t.display}</span>
                 <span className="text-neutral-500">{t.user?.name}</span>
               </div>
             ))}

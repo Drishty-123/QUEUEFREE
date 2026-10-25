@@ -43,6 +43,7 @@ exports.services = asyncHandler(async (_req, res) => {
 exports.join = asyncHandler(async (req, res) => {
   const service = await Service.findById(req.params.serviceId);
   if (!service) throw new AppError(404, 'Service not found');
+  if (!service.open) throw new AppError(409, 'This counter is closed right now — check back later');
 
   const existing = await Token.findOne({ service: service._id, user: req.user.id, state: { $in: ['waiting', 'called', 'serving'] } });
   if (existing) throw new AppError(409, `You already hold ${existing.display} for this queue`);
@@ -60,6 +61,7 @@ exports.join = asyncHandler(async (req, res) => {
     user: req.user.id,
     number: service.lastNumbers,
     display: `${service.prefix}-${service.lastNumbers}`,
+    priority: !!req.body.priority,
   });
   publish(service._id, { type: 'joined', display: token.display, waiting: await Token.countDocuments({ service: service._id, state: 'waiting' }) });
   const stats = await serviceStats(service);
@@ -80,7 +82,10 @@ exports.myToken = asyncHandler(async (req, res) => {
     ...(token.state === 'waiting' ? {} : {}),
   });
   const position = token.state === 'waiting' ? ahead + 1 : 0; // 0 = at the counter
-  res.json({ ...token.toObject(), position, stats: predictWait(position, stats), statsMeta: stats });
+  const estimatedTurnAt = token.state === 'waiting'
+    ? new Date(Date.now() + position * stats.avg * 60000).toISOString()
+    : null;
+  res.json({ ...token.toObject(), position, estimatedTurnAt, stats: predictWait(position, stats), statsMeta: stats });
 });
 
 exports.leave = asyncHandler(async (req, res) => {

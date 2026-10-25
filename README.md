@@ -164,6 +164,11 @@ Live links: backend — [add URL] · frontend — [add URL]
 
 - **Queue analytics** — tokens issued, served, no-show rate, average wait and hourly throughput per counter.
 
+- **Open/close counters** — staff can close a counter; new joins are refused with a clear message until it reopens.
+- **Priority assistance lane** — elderly/pregnant/accessibility tokens jump the queue at call-next, flagged on every board.
+- **Estimated turn clock** — waiting customers see the wall-clock time their turn is expected.
+- **Role picker at signup** — customers and counter staff register with the right powers.
+
 ## Roadmap
 
 - SMS/WhatsApp "you're next" notifications.

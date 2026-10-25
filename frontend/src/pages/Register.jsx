@@ -44,6 +44,19 @@ export default function Register() {
           <h1 className="display text-2xl uppercase">Join QueueFree</h1>
           <p className="mt-1 text-sm text-neutral-500">Wait anywhere but the waiting room</p>
         </div>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          {[['customer', '🙋 Customer'], ['staff', '🧑‍💼 Counter staff']].map(([r, label]) => (
+            <button type="button" key={r} onClick={() => setForm({ ...form, role: r })}
+              className={`border-2 py-3 text-sm font-bold uppercase transition ${form.role === r ? 'border-black bg-safety text-white' : 'border-black/20 bg-white text-neutral-500 hover:border-black'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {form.role === 'staff' && (
+          <p className="mb-4 border-2 border-dashed border-safety/50 bg-safety-soft px-3 py-2 text-xs font-bold text-safety">
+            Staff accounts can call tokens, mark no-shows and open/close counters.
+          </p>
+        )}
         <form onSubmit={submit} className="space-y-4 border-2 border-black p-6">
           {error && <p className="border-2 border-red-600 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">{error}</p>}
           <label className="block"><span className="text-sm font-bold">Name</span>

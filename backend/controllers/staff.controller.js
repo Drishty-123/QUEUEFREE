@@ -25,7 +25,9 @@ exports.callNext = asyncHandler(async (req, res) => {
     await current.save();
   }
 
-  const next = await Token.findOne({ service: service._id, state: 'waiting' }).sort('number');
+  // priority-assistance tokens (elderly/pregnant/accessible) jump the queue
+  const next = (await Token.findOne({ service: service._id, state: 'waiting', priority: true }).sort('number'))
+    || (await Token.findOne({ service: service._id, state: 'waiting' }).sort('number'));
   if (!next) {
     publish(service._id, { type: 'now-serving', display: null });
     return res.json({ called: null, closed: current ? current.display : null });
@@ -74,4 +76,16 @@ exports.console = asyncHandler(async (req, res) => {
   const waiting = await Token.find({ service: service._id, state: 'waiting' }).sort('number').limit(20).populate('user', 'name');
   const recent = await Token.find({ service: service._id, state: { $in: ['done', 'no-show', 'cancelled'] } }).sort('-doneAt -updatedAt').limit(10);
   res.json({ service, current, waiting, recent });
+});
+
+
+// Open/close the counter: closed counters refuse new tokens.
+exports.toggleOpen = asyncHandler(async (req, res) => {
+  requireStaff(req);
+  const service = await Service.findById(req.params.serviceId);
+  if (!service) throw new AppError(404, 'Service not found');
+  service.open = typeof req.body.open === 'boolean' ? req.body.open : !service.open;
+  await service.save();
+  publish(service._id, { type: 'open-toggled', open: service.open });
+  res.json(service);
 });

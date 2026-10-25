@@ -26,5 +26,6 @@ router.post('/staff/:serviceId/next', s.callNext);
 router.get('/staff/:serviceId/console', s.console);
 router.patch('/staff/tokens/:id/no-show', s.noShow);
 router.patch('/staff/tokens/:id/complete', s.complete);
+router.patch('/staff/services/:serviceId/open', s.toggleOpen);
 
 module.exports = router;

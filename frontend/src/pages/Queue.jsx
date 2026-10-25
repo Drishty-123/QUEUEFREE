@@ -30,14 +30,15 @@ export default function Queue() {
     es.onerror = () => setConnected(false);
     es.addEventListener('state', (e) => {
       try { setLive(JSON.parse(e.data)); } catch { /* ignore */ }
+      loadMine(); // keep position/ETA fresh on every queue mutation
     });
     return () => es.close();
   }, [serviceId]);
 
-  async function join() {
+  async function join(priority = false) {
     if (!user) { toast('Log in to take a token', 'info'); return; }
     try {
-      const r = await client.post(`/queues/${serviceId}/join`, {});
+      const r = await client.post(`/queues/${serviceId}/join`, { priority });
       toast(`Token ${r.data.display} issued — you're #${r.data.position} in line`);
       loadMine();
     } catch (err) {
@@ -94,7 +95,16 @@ export default function Queue() {
           {mine === null && (
             <div className="border-2 border-black p-6 text-center shadow-[6px_6px_0_0_#ea580c]">
               <p className="font-bold">You're not in this queue.</p>
-              <button onClick={join} className="mt-3 w-full border-2 border-black bg-safety py-3 font-bold text-white hover:bg-orange-700">Take a token</button>
+              {live?.service?.open === false ? (
+                <p className="mt-3 rounded-lg bg-red-50 py-2 text-sm font-bold text-red-600">Counter closed — check back later.</p>
+              ) : (
+                <>
+                  <button onClick={() => join(false)} className="mt-3 w-full border-2 border-black bg-safety py-3 font-bold text-white hover:bg-orange-700">Take a token</button>
+                  <button onClick={() => join(true)} className="mt-2 w-full border-2 border-dashed border-safety/60 bg-safety-soft py-2.5 text-sm font-bold text-safety hover:bg-safety hover:text-white">
+                    ♿ Priority assistance (elderly / pregnant / accessibility)
+                  </button>
+                </>
+              )}
             </div>
           )}
           {mine && (
@@ -102,15 +112,23 @@ export default function Queue() {
               <p className="mono text-xs uppercase tracking-widest text-neutral-400">your token</p>
               <p className="display text-6xl">{mine.display}</p>
               {mine.state === 'waiting' ? (
-                <>
-                  <p className="mt-2 text-lg font-bold">Position #{mine.position}</p>
-                  <p className="text-sm text-neutral-500">
-                    estimated wait <strong>{mine.stats.minutes} min</strong> (range {mine.stats.low}–{mine.stats.high})
-                  </p>
-                </>
+                mine.position <= 2 ? (
+                  <p className="mono mt-2 animate-pulse text-xl font-bold uppercase text-safety">⚡ You're almost up — get ready!</p>
+                ) : (
+                  <>
+                    <p className="mt-2 text-lg font-bold">Position #{mine.position}</p>
+                    <p className="text-sm text-neutral-500">
+                      estimated wait <strong>{mine.stats.minutes} min</strong> (range {mine.stats.low}–{mine.stats.high})
+                    </p>
+                    {mine.estimatedTurnAt && (
+                      <p className="mono mt-1 text-xs text-neutral-400">your turn ≈ {new Date(mine.estimatedTurnAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    )}
+                  </>
+                )
               ) : (
                 <p className="mt-2 text-lg font-bold text-safety">It's your turn — head to the counter!</p>
               )}
+              {mine.priority && <span className="mono mt-1 inline-block rounded bg-safety px-2 py-0.5 text-[10px] font-bold uppercase text-white">priority assistance</span>}
               <div className="mt-4 flex gap-2">
                 {mine.state === 'waiting' && (
                   <button onClick={leave} className="flex-1 border-2 border-black py-2.5 text-sm font-bold hover:bg-black hover:text-white">Leave queue</button>
